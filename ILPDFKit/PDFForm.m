@@ -39,7 +39,7 @@
     self = [super init];
     if(self != nil)
     {
-        _value = [[self getAttributeFromLeaf:leaf Name:@"V" Inheritable:YES] retain];
+        _value = [self getAttributeFromLeaf:leaf Name:@"V" Inheritable:YES];
         self.name = [self getFormNameFromLeaf:leaf ];
         NSString* formTypeString = [self getAttributeFromLeaf:leaf Name:@"FT"  Inheritable:YES];
         self.defaultValue = [self getAttributeFromLeaf:leaf Name:@"DV"  Inheritable:YES];
@@ -50,27 +50,27 @@
         self.exportValue = [self getExportValueFrom:leaf];
         self.setAppearanceStream = [self getSetAppearanceStreamFromLeaf:leaf];
         
-        NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+        @autoreleasepool {
         
-        NSArray* arr = [[self getAttributeFromLeaf:leaf Name:@"Opt" Inheritable:YES] nsa];
-        
-        NSMutableArray* temp = [NSMutableArray array];
-        
-        for(id obj in arr)
-        {
-            if([obj isKindOfClass:[PDFArray class]])
+            NSArray* arr = [[self getAttributeFromLeaf:leaf Name:@"Opt" Inheritable:YES] nsa];
+            
+            NSMutableArray* temp = [NSMutableArray array];
+            
+            for(id obj in arr)
             {
-                [temp addObject:[obj objectAtIndex:0]];
+                if([obj isKindOfClass:[PDFArray class]])
+                {
+                    [temp addObject:obj[0]];
+                }
+                else 
+                {
+                    [temp addObject:obj];
+                }
             }
-            else 
-            {
-                [temp addObject:obj];
-            }
-        }
        
-        self.options = [NSArray arrayWithArray:temp];
+            self.options = [NSArray arrayWithArray:temp];
         
-        [pool drain];
+        }
         
         if([formTypeString isEqualToString:@"Btn"])
         {
@@ -115,7 +115,7 @@
         {
             BOOL noRotate = [_flagsString rangeOfString:@"NoRotate"].location!=NSNotFound;
  
-            NSUInteger rotation = [(PDFPage*)[self.parent.document.pages objectAtIndex:_page-1] rotationAngle];
+            NSUInteger rotation = [(PDFPage*)(self.parent.document.pages)[_page-1] rotationAngle];
             if(noRotate)rotation = 0;
             CGFloat a = self.frame.size.width;
             CGFloat b = self.frame.size.height;
@@ -150,19 +150,7 @@
 
 -(void)dealloc
 {
-    
     [self removeObservers];
-    self.value = nil;
-    self.options = nil;
-    self.name = nil;
-    self.uname = nil;
-    self.actions = nil;
-    self.exportValue = nil;
-    self.defaultValue = nil;
-    self.setAppearanceStream = nil;
-    
-    self.flagsString = nil;
-    [super dealloc];
 }
 
 -(void)setOptions:(NSArray *)opt
@@ -172,8 +160,7 @@
         self.options = nil;
         return;
     }
-    [_options release];
-    _options = [opt retain];
+    _options = opt;
 }
 
 
@@ -192,8 +179,7 @@
     
     if(_value!=val)
     {
-        [_value release];
-        _value = [val retain];
+        _value = val;
     }
 }
 
@@ -316,7 +302,7 @@
     
     for(NSUInteger c = 0; c < self.page-1;c++)
     {
-        PDFPage* pg = [self.parent.document.pages objectAtIndex:c];
+        PDFPage* pg = (self.parent.document.pages)[c];
         
         CGFloat iwidth = [pg cropBox].size.width;
         
@@ -333,7 +319,6 @@
     
     if(_formUIElement)
     {
-        [_formUIElement release];
         _formUIElement = nil;
     }
     
@@ -385,7 +370,6 @@
     
     if(_formUIElement)
     {
-        [_formUIElement retain];
         [_formUIElement setValue:self.value];
         _formUIElement.delegate = self;
         [self addObserver:_formUIElement forKeyPath:@"value" options:NSKeyValueObservingOptionNew context:NULL];
@@ -399,8 +383,8 @@
 
 -(void)uiAdditionEntered:(PDFUIAdditionElementView *)sender
 {
-    [[_actions objectForKey:@"E"] execute];
-    [[_actions objectForKey:@"A"] execute];
+    [_actions[@"E"] execute];
+    [_actions[@"A"] execute];
 }
 
 -(void)uiAdditionValueChanged:(PDFUIAdditionElementView *)sender
@@ -429,7 +413,7 @@
         else
         {
             self.modified = NO;
-            [[_actions objectForKey:@"A"] execute];
+            [_actions[@"A"] execute];
             return;
         }
     }
@@ -437,9 +421,9 @@
     {
         [_parent setValue:[v value] ForFormWithName:self.name];
         [_parent setDocumentValue:self.value ForKey:@"EventValue"];
-        ((PDFFormAction*)[_actions objectForKey:@"K"]).prefix = ((PDFFormAction*)[_actions objectForKey:@"E"]).string;
-        [[_actions objectForKey:@"K"] execute];
-        [[_actions objectForKey:@"K"] execute];
+        ((PDFFormAction*)_actions[@"K"]).prefix = ((PDFFormAction*)_actions[@"E"]).string;
+        [_actions[@"K"] execute];
+        [_actions[@"K"] execute];
     }
 }
 
@@ -530,9 +514,8 @@
     if((actionsd = [leaf objectForKey:@"A"]) != nil)
     {
         PDFFormAction* act = [[PDFFormAction alloc] initWithActionDictionary:actionsd];
-        [ret setObject:act forKey:@"A"];
+        ret[@"A"] = act;
         act.key = @"A";
-        [act release];
     }
     
     PDFDictionary* iter = nil;
@@ -554,7 +537,7 @@
     
     if(active)
     {
-        NSArray* keys = [NSArray arrayWithObjects:@"E",@"K", nil];
+        NSArray* keys = @[@"E",@"K"];
         
         for(NSString* key in keys)
         {
@@ -563,8 +546,7 @@
             {
                 PDFFormAction* formAction = [[PDFFormAction alloc] initWithActionDictionary:action];
                 formAction.key = key;
-                [ret setObject:formAction forKey:key];
-                [formAction release];
+                ret[key] = formAction;
             }
         }
     }
@@ -592,7 +574,7 @@
                         NSData* dat = str.data;
                         if(str.dataFormat == CGPDFDataFormatRaw)
                         {
-                            return [[[NSString alloc] initWithData:dat encoding:NSASCIIStringEncoding] autorelease];
+                            return [[NSString alloc] initWithData:dat encoding:NSASCIIStringEncoding];
                         }
                     }
                 }
@@ -639,7 +621,6 @@
     {
         [self removeObserver:_formUIElement forKeyPath:@"value"];
         [self removeObserver:_formUIElement forKeyPath:@"options"];
-        [_formUIElement release];
         _formUIElement = nil;
     }
     

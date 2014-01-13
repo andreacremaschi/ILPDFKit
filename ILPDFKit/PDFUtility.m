@@ -14,7 +14,6 @@ static PDFUtility* _sharedPDFUtility = nil;
 {
  
     _sharedPDFUtility= nil;
-    [super dealloc];
 }
 
 -(id)init
@@ -29,14 +28,12 @@ static PDFUtility* _sharedPDFUtility = nil;
 
 +(PDFUtility*)sharedPDFUtility
 {
-	@synchronized([PDFUtility class])
-	{
-		if(!_sharedPDFUtility)
-			[[self alloc] init];
-        
-		return _sharedPDFUtility;
-	}
-	return nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _sharedPDFUtility = [self new];
+    });
+
+    return _sharedPDFUtility;
 }
 
 +(id)alloc
@@ -51,7 +48,7 @@ static PDFUtility* _sharedPDFUtility = nil;
 }
 
 
-+(CGContextRef)outputPDFContextCreate:(const CGRect *)inMediaBox Path:(CFStringRef)path
++(CGContextRef)newOutputPDFContext:(const CGRect *)inMediaBox path:(CFStringRef)path
 {
     CGContextRef outContext = NULL;
     CFURLRef url;
@@ -65,7 +62,7 @@ static PDFUtility* _sharedPDFUtility = nil;
     return outContext;
 }
 
-+(CGPDFDocumentRef)createPDFDocumentRefFromData:(NSData*)data
++(CGPDFDocumentRef)newPDFDocumentRefFromData:(NSData*)data
 {
     CGDataProviderRef dataProvider = CGDataProviderCreateWithCFData((CFDataRef)data);
     CGPDFDocumentRef pdf = CGPDFDocumentCreateWithProvider(dataProvider);
@@ -73,7 +70,7 @@ static PDFUtility* _sharedPDFUtility = nil;
     return pdf;
 }
 
-+(CGPDFDocumentRef)createPDFDocumentRefFromResource:(NSString*)name
++(CGPDFDocumentRef)newPDFDocumentRefFromResource:(NSString*)name
 {
     NSString *pathToPdfDoc = [[NSBundle mainBundle] pathForResource:name ofType:@"pdf"];
     NSURL *url = [NSURL fileURLWithPath:pathToPdfDoc];
@@ -81,7 +78,7 @@ static PDFUtility* _sharedPDFUtility = nil;
     return pdf;
 }
 
-+(CGPDFDocumentRef)createPDFDocumentRefFromPath:(NSString*)pathToPdfDoc
++(CGPDFDocumentRef)newPDFDocumentRefFromPath:(NSString*)pathToPdfDoc
 {
     NSURL *url = [NSURL fileURLWithPath:pathToPdfDoc];
     CGPDFDocumentRef pdf = CGPDFDocumentCreateWithURL((CFURLRef)url);
@@ -93,7 +90,7 @@ static PDFUtility* _sharedPDFUtility = nil;
 {
     if([stringToEncode rangeOfString:@"%"].location!=NSNotFound)return NULL;
     CFStringRef encodedStr= CFURLCreateStringByAddingPercentEscapes(NULL,(CFStringRef)stringToEncode,NULL,(CFStringRef)@"!*()@$/?#[] \t\n\r",kCFStringEncodingUTF8);
-    NSString* ret = [[[NSString alloc] initWithString:(NSString*)encodedStr] autorelease];
+    NSString* ret = [[NSString alloc] initWithString:(__bridge NSString*)encodedStr];
     CFRelease(encodedStr);
     return [ret stringByReplacingOccurrencesOfString:@"%" withString:@"#"];
 }
@@ -118,7 +115,6 @@ static PDFUtility* _sharedPDFUtility = nil;
     {
         NSString* temp = [[NSString alloc] initWithData:obj encoding:NSUTF8StringEncoding];
             objRepresentation = [NSString stringWithFormat:@"<%@>",temp];
-        [temp release];
     }
     else if([obj isKindOfClass:[NSNumber class]])
     {
@@ -191,7 +187,7 @@ static PDFUtility* _sharedPDFUtility = nil;
     
     CFStringRef encodedStr= CFURLCreateStringByAddingPercentEscapes(NULL,(CFStringRef)str,NULL,(CFStringRef)@"!*()@,$^~/?%#[]'\" \t\n\r",kCFStringEncodingUTF8);
     
-    NSString* ret = [[[NSString alloc] initWithString:(NSString*)encodedStr] autorelease];
+    NSString* ret = [[NSString alloc] initWithString:(__bridge NSString*)encodedStr];
     
     CFRelease(encodedStr);
     
@@ -207,7 +203,7 @@ static PDFUtility* _sharedPDFUtility = nil;
     
     CFStringRef decodedStr= CFURLCreateStringByReplacingPercentEscapes(NULL,(CFStringRef)str,CFSTR(""));
     
-    NSString* ret = [[[NSString alloc] initWithString:(NSString*)decodedStr] autorelease];
+    NSString* ret = [[NSString alloc] initWithString:(__bridge NSString*)decodedStr];
     
     CFRelease(decodedStr);
     

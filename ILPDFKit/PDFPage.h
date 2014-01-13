@@ -37,7 +37,7 @@
 
 /** The page dictionary.
  */
-@property(nonatomic,readonly) PDFDictionary* dictionary;
+@property(weak, nonatomic,readonly) PDFDictionary* dictionary;
 
 
 
@@ -86,6 +86,6 @@
 /** The resource dictionary for the page.
  
  */
-@property(nonatomic,readonly) PDFDictionary* resources;
+@property(weak, nonatomic,readonly) PDFDictionary* resources;
 
 @end

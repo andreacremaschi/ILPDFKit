@@ -19,7 +19,7 @@
 /** The NSArray backing store.
  @discussion PDFArray maps the CGPDFArray arr onto the NSArray nsa. Thus nsa contains all the information of its owning PDFArray.
  */
-@property(nonatomic,readonly) NSArray* nsa;
+@property(weak, nonatomic,readonly) NSArray* nsa;
 
 /** The CGPDFDictionaryRef that defines the dictionary.
  

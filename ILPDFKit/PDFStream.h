@@ -21,7 +21,7 @@
 /** The data representing the stream content.
  @discussion It's important to reference dataFormat so that the data can be correctly interpreted.
  */
-@property(nonatomic,readonly) NSData* data;
+@property(weak, nonatomic,readonly) NSData* data;
 
 
 /** The data format for the stream content.
@@ -30,7 +30,7 @@
 
 /** The stream dictionary.
  */
-@property(nonatomic,readonly) PDFDictionary* dictionary;
+@property(weak, nonatomic,readonly) PDFDictionary* dictionary;
 
 
 /**---------------------------------------------------------------------------------------

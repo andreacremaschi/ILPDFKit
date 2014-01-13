@@ -13,7 +13,7 @@
 
 /** The parent PDFDocument.
  */
-@property(nonatomic,assign) PDFDocument* document;
+@property(nonatomic,weak) PDFDocument* document;
 
 /**---------------------------------------------------------------------------------------
  * @name Creating a PDFFormContainer

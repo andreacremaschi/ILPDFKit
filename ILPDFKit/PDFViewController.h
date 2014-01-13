@@ -21,11 +21,11 @@
 
 /** The PDFDocument that represents the model for the PDFViewController
  */
-@property(nonatomic,retain) PDFDocument* document;
+@property(nonatomic,strong) PDFDocument* document;
 
 /** The PDFView that represents the view for the PDFViewController
  */
-@property(nonatomic,retain) PDFView* pdfView;
+@property(nonatomic,strong) PDFView* pdfView;
 
 
 

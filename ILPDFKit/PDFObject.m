@@ -12,11 +12,6 @@
 }
 
 
--(void)dealloc
-{
-    [_representation release];
-    [super dealloc];
-}
 
 -(NSString*)pdfFileRepresentation
 {
@@ -47,7 +42,7 @@
     {
        
         NSString* temp = [rep stringByTrimmingCharactersInSet:[PDFUtility whiteSpaceCharacterSet]];
-        _representation = [temp retain];
+        _representation = temp;
         _parentDocument = parentDocument;
       
     }

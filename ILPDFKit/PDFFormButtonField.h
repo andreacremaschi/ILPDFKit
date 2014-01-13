@@ -22,7 +22,7 @@
 
 /** The name of the button if a push button.
  */
-@property(nonatomic,retain) NSString* name;
+@property(nonatomic,strong) NSString* name;
 
 
 /** The export value for the button's on state.
@@ -30,7 +30,7 @@
  For a simple two button field to choose 'Female' of 'Male' for example, 
  the export values would be 'Female', 'Male'.
  */
-@property(nonatomic,retain) NSString* exportValue;
+@property(nonatomic,strong) NSString* exportValue;
 
 
 /**---------------------------------------------------------------------------------------

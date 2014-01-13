@@ -19,11 +19,6 @@
 
 
 
--(void)dealloc
-{
-    [_dictionary release];
-    [super dealloc];
-}
 
 -(id)initWithPage:(CGPDFPageRef)pg
 {

@@ -12,12 +12,6 @@
 }
 
 
--(void)dealloc
-{
-    [_data release];
-    [_dictionary release];
-    [super dealloc];
-}
 
 -(id)initWithStream:(CGPDFStreamRef)pstrm
 {
@@ -45,13 +39,18 @@
     return _dictionary;
 }
 
+- (void)_readData {
+    CFDataRef dat = CGPDFStreamCopyData(_strm, &_dataFormat);
+    _data = ((__bridge NSData*)dat);
+    CFRelease(dat);
+
+}
 
 -(CGPDFDataFormat)dataFormat
 {
     if(_data == nil)
     {
-        NSData* temp = self.data;
-        temp = nil;
+        [self _readData];
     }
     
     return _dataFormat;
@@ -61,9 +60,7 @@
 {
     if(_data == nil)
     {
-        CFDataRef dat = CGPDFStreamCopyData(_strm, &_dataFormat);
-        _data = [((NSData*)dat) retain];
-        CFRelease(dat);
+        [self _readData];
     }
     
     return _data;

@@ -38,11 +38,7 @@
 
 -(void)dealloc
 {
-    [_tv release];
     self.options = nil;
-    [_selection release];
-    [_dropIndicator release];
-    [super dealloc];
 }
 
 
@@ -54,7 +50,7 @@
         self.opaque = NO;
         self.backgroundColor = [PDFWidgetColor colorWithAlphaComponent:1];
         self.layer.cornerRadius = self.frame.size.height/6;
-        _options = [opt retain];
+        _options = opt;
         _tv= [[UITableView alloc] initWithFrame:CGRectMake(0, frame.size.height, frame.size.width, frame.size.height*MIN(5,[_options count])) style:UITableViewStylePlain];
         _tv.dataSource = self;
         _tv.delegate = self;
@@ -87,7 +83,6 @@
         middleButton.backgroundColor = [UIColor clearColor];
         [middleButton addTarget:self action:@selector(dropButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:middleButton];
-        [middleButton release];
         [self addSubview:_tv];
        
     }
@@ -128,8 +123,7 @@
     }
     if(_options!=opt)
     {
-        [_options release];
-        _options = [opt retain];
+        _options = opt;
     }
     CGFloat sf = _selection.frame.size.height;
     _tv.frame = CGRectMake(0, sf, self.frame.size.width, sf*MIN(5,[_options count]));
@@ -179,7 +173,6 @@
     paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
     paragraphStyle.alignment = align;
     [text drawInRect:CGRectMake(0, 0, rect.size.width, rect.size.height) withAttributes:@{NSFontAttributeName:font,NSParagraphStyleAttributeName: paragraphStyle}];
-    [paragraphStyle release];
     
     UIGraphicsPopContext();
 }
@@ -188,7 +181,7 @@
 
 -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UITableViewCell* cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil] autorelease];
+    UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     cell.opaque = NO;
     cell.backgroundColor = [UIColor clearColor];
     cell.textLabel.backgroundColor = [UIColor clearColor];
@@ -197,7 +190,7 @@
     cell.detailTextLabel.opaque = NO;
     cell.textLabel.adjustsFontSizeToFitWidth = YES;
     [cell.textLabel setFont:[UIFont systemFontOfSize:MAX(0.5*tableView.bounds.size.height/5,_baseFontHeight/1.2f)]];
-    cell.textLabel.text = [_options objectAtIndex:indexPath.row];
+    cell.textLabel.text = _options[indexPath.row];
     [cell.textLabel setTextColor:[UIColor blackColor]];
     return cell;
 }
@@ -221,7 +214,7 @@
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    [self setValue:[_options objectAtIndex:indexPath.row]];
+    [self setValue:_options[indexPath.row]];
     [_delegate uiAdditionValueChanged:self];
 }
 

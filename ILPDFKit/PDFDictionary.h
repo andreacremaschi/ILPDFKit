@@ -22,7 +22,7 @@
  @discussion PDFDictionary maps the CGPDFDictionary dict onto the NSDictionary nsd. Thus nsd contains all the information of its owning PDFDictionary except for its parent.
  */
 
-@property(nonatomic,readonly) NSDictionary* nsd;
+@property(weak, nonatomic,readonly) NSDictionary* nsd;
 
 /** The CGPDFDictionaryRef that defines the dictionary.
  */
@@ -33,7 +33,7 @@
  @discussion If no such parent exists, parent is nil.
  */
 
-@property(nonatomic,assign) PDFDictionary* parent;
+@property(nonatomic,weak) PDFDictionary* parent;
 
 /**---------------------------------------------------------------------------------------
  * @name Creating a PDFDictionary

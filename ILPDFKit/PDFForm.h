@@ -37,7 +37,7 @@ typedef enum PDFFormType
 
 /** The value of the form.
  */
-@property(nonatomic,retain) NSString* value;
+@property(nonatomic,strong) NSString* value;
 
 /** The page number on which the form appears. The first page has value 1.
  */
@@ -71,17 +71,17 @@ typedef enum PDFFormType
 /** The full, period delimeted form name.
  e.g PersonalInfo.Address.PostalCode
  */
-@property(nonatomic,retain) NSString* name;
+@property(nonatomic,strong) NSString* name;
 
 
 /** The name of the field shown to the user
  */
-@property(nonatomic,retain) NSString* uname;
+@property(nonatomic,strong) NSString* uname;
 
 
 /** The default value for the form.
  */
-@property(nonatomic,retain) NSString* defaultValue;
+@property(nonatomic,strong) NSString* defaultValue;
 
 /** A string containing all flags.
  Current supported flags are:
@@ -105,12 +105,12 @@ typedef enum PDFFormType
  - NoView
  
  */
-@property(nonatomic,retain) NSString* flagsString;
+@property(nonatomic,strong) NSString* flagsString;
 
 
 /** For choice fields only, the options of the combo box.
  */
-@property(nonatomic,retain) NSArray* options;
+@property(nonatomic,strong) NSArray* options;
 
 /** The intended text alignemnt for text in the form.
  */
@@ -126,18 +126,18 @@ typedef enum PDFFormType
 
 /** The form container that owns the form
  */
-@property(nonatomic,assign) PDFFormContainer* parent;
+@property(nonatomic,weak) PDFFormContainer* parent;
 
 /** The dictionary containing all PDFFormAction actions. The keys match the corresponding key through which the action exists in it's parent PDFDictionary. The main action is under 'A' and additionaly actions are found uner 'K' and 'E'.
  */
-@property(nonatomic,retain) NSMutableDictionary* actions;
+@property(nonatomic,strong) NSMutableDictionary* actions;
 
 
 
 /** This is used with button forms only. Gives the name of the choice represented by that button.
  @discussion If a button is part of a group of buttons where only one may be selected at once, then it's value is the exportValue of the selected button. All buttons in such a group have the same name and represent a single form conceptually. Thus all forms in a radio button or check box group represent the field and always have the same value. A button is selected if and only if its exportValue is the same as its value. If no buttons are selected, or an unselected button is single and not part of a group, then the value is nil.
  */
-@property(nonatomic,retain) NSString* exportValue;
+@property(nonatomic,strong) NSString* exportValue;
 
 
 /** Indicates if the form has been modified by user input.
@@ -147,7 +147,7 @@ typedef enum PDFFormType
 
 /** The appearance stream for the set state of button forms. Can be used to customize button appearance to better match the PDF.
  */
-@property(nonatomic,retain) NSString* setAppearanceStream;
+@property(nonatomic,strong) NSString* setAppearanceStream;
 
 
 

@@ -40,7 +40,7 @@ Note that Strings and Numbers may be presented as generic PDFObject instances in
 /**
  The parent document.
  */
-@property(nonatomic,readonly) PDFDocument* parentDocument;
+@property(weak, nonatomic,readonly) PDFDocument* parentDocument;
 
 
 /**---------------------------------------------------------------------------------------

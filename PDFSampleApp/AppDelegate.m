@@ -18,7 +18,7 @@
 
     
     // See if a set saved file already exists for demonstration purposes.
-    NSString *path = [ [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES) objectAtIndex:0] stringByAppendingPathComponent:@"test-after-save.pdf"];
+    NSString *path = [ NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES)[0] stringByAppendingPathComponent:@"test-after-save.pdf"];
     
     
     if([[NSFileManager defaultManager] fileExistsAtPath:path])

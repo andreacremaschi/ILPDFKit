@@ -21,10 +21,7 @@
 {
     [self removeFromParentViewController];
     [_pdfView removeFromSuperview];
-    self.pdfView = nil;
-    self.document = nil;
     
-    [super dealloc];
 }
 
 
@@ -150,12 +147,10 @@
         {
             [pic presentAnimated:YES completionHandler:^(UIPrintInteractionController *printInteractionController, BOOL completed, NSError *error){}];
         }
-        [printd release];
         return YES;
         
     }
     
-    [printd release];
     return NO;
 }
 
@@ -183,7 +178,7 @@
    
     CGFloat widthScale = (maxWidth/(width-2*margin));
     
-    NSMutableData* ret = [[NSMutableData data] retain];
+    NSMutableData* ret = [NSMutableData data];
     
     
     CGFloat canvasWidth = PDFDefaultCanvasWidth;
@@ -243,7 +238,6 @@
     }
     UIGraphicsEndPDFContext();
     PDFDocument* retdoc = [[PDFDocument alloc] initWithData:ret];
-    [ret release];
     return retdoc;
 }
 
@@ -251,7 +245,6 @@
 {
     [_document refresh];
     [_pdfView removeFromSuperview];
-    [_pdfView release];
     [self loadPDFView];
 }
 
@@ -275,7 +268,6 @@
     
     NSArray* additionViews = [_document.forms createUIAdditionViewsForSuperviewWithWidth:frm.size.width Margin:margins.x HMargin:margins.y];
         _pdfView = [[PDFView alloc] initWithFrame:self.view.bounds DataOrPath:pass AdditionViews:additionViews];
-    [additionViews release];
     [self.view addSubview:_pdfView];
 }
 

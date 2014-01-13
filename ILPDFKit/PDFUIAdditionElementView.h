@@ -26,19 +26,19 @@
 @interface PDFUIAdditionElementView : UIView
 {
     CGFloat _zoomScale;
-    NSObject<PDFUIAdditionElementViewDelegate>* _delegate;
+    NSObject<PDFUIAdditionElementViewDelegate>* __weak _delegate;
 }
 
 
 /** The value of the element.
  @discussion If there is an associated PDFForm to the view, then set of values are synced using key value observing.
  */
-@property(nonatomic,retain) NSString* value;
+@property(nonatomic,strong) NSString* value;
 
 /** The options of the element.
  @discussion If there is an associated PDFForm to the view, then set of options are synced using key value observing.
  */
-@property(nonatomic,retain) NSArray* options;
+@property(nonatomic,strong) NSArray* options;
 
 
 /** The initial frame of the view, without any transformations applied to its superview.
@@ -48,7 +48,7 @@
 
 /** The delegate.
  */
-@property(nonatomic,assign) NSObject<PDFUIAdditionElementViewDelegate>* delegate;
+@property(nonatomic,weak) NSObject<PDFUIAdditionElementViewDelegate>* delegate;
 
 
 

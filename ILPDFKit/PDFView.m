@@ -13,12 +13,6 @@
 
 @implementation PDFView
 
--(void)dealloc
-{
-  
-    [_pdfUIAdditionElementViews release];
-    [super dealloc];
-}
 
 - (id)initWithFrame:(CGRect)frame DataOrPath:(id)dataOrPath AdditionViews:(NSArray*)uiAdditionViews
 {
@@ -37,7 +31,6 @@
         
        
         [self addSubview:_pdfView];
-        [_pdfView release];
         [_pdfView.scrollView setZoomScale:1];
         [_pdfView.scrollView setContentOffset:CGPointZero];
         
@@ -67,7 +60,6 @@
         UITapGestureRecognizer* tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:nil action:NULL];
             [self addGestureRecognizer:tapGestureRecognizer];
         tapGestureRecognizer.delegate = self;
-        [tapGestureRecognizer release];
     }
     return self;
 }
@@ -135,7 +127,7 @@
 {
     
     for(UIView* v in _pdfUIAdditionElementViews)[v removeFromSuperview];
-    [_pdfUIAdditionElementViews release];_pdfUIAdditionElementViews = nil;
+    _pdfUIAdditionElementViews = nil;
     _pdfUIAdditionElementViews = [[NSMutableArray alloc] initWithArray:additionViews];
     for(PDFUIAdditionElementView* element in _pdfUIAdditionElementViews)
     {

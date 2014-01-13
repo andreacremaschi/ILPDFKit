@@ -33,15 +33,9 @@
 void checkKeys(const char *key,CGPDFObjectRef value,void *info)
 {
     NSString* add = [[NSString alloc] initWithUTF8String:key];
-        [(NSMutableArray*)info addObject:add];
-    [add release];
+        [(__bridge NSMutableArray*)info addObject:add];
 }
 
--(void)dealloc
-{
-    [_nsd release];
-    [super dealloc];
-}
 
 -(id)initWithDictionary:(CGPDFDictionaryRef)pdict
 {
@@ -68,8 +62,9 @@ void checkKeys(const char *key,CGPDFObjectRef value,void *info)
 
 -(id)objectForKey:(NSString*)aKey
 {
-    return [self.nsd objectForKey:aKey];
+    return (self.nsd)[aKey];
 }
+
 
 -(NSArray*)allKeys
 {
@@ -105,7 +100,7 @@ void checkKeys(const char *key,CGPDFObjectRef value,void *info)
 {
     if(_parent == nil)
     {
-        _parent = [self.nsd objectForKey:@"Parent"];
+        _parent = (self.nsd)[@"Parent"];
     }
     return _parent;
 }
@@ -114,59 +109,59 @@ void checkKeys(const char *key,CGPDFObjectRef value,void *info)
 {
     if(_nsd == nil)
     {
-        NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-        NSMutableArray* keys = [NSMutableArray array];
-        NSMutableDictionary* nsdFiller = nil;
-        
-        if(_dict!=NULL)
-        {
-            CGPDFDictionaryApplyFunction(_dict, checkKeys, keys);
-        }
-        else
-        {
-            nsdFiller = [NSMutableDictionary dictionary];
-            NSMutableArray* keysAndValues = [NSMutableArray array];
+        @autoreleasepool {
+            NSMutableArray* keys = [NSMutableArray array];
+            NSMutableDictionary* nsdFiller = nil;
             
-            PDFObjectParser* parser = [PDFObjectParser parserWithString:[self pdfFileRepresentation] Document:self.parentDocument];
-            
-            for(id pdfObject in parser)[keysAndValues addObject:pdfObject];
-            
-            if([keysAndValues count]&1)return nil;
-            
-            for(NSUInteger c = 0 ; c < [keysAndValues count]/2; c++)
+            if(_dict!=NULL)
             {
-                NSString* key = [keysAndValues objectAtIndex:2*c];
-                [keys addObject:key];
-                [nsdFiller setObject:[keysAndValues objectAtIndex:2*c+1] forKey:key];
+                CGPDFDictionaryApplyFunction(_dict, checkKeys, (__bridge void *)(keys));
             }
-        }
-
-        NSMutableDictionary* temp = [NSMutableDictionary dictionary];
-        
-        for(NSString* key in keys)
-        {
-            NSAutoreleasePool* poolPDFObject  = [[NSAutoreleasePool alloc] init];
-            id set = (_dict!=NULL?[self pdfObjectFromKey:key]:[nsdFiller objectForKey:key]);
-
-            if(set != nil) 
+            else
             {
+                nsdFiller = [NSMutableDictionary dictionary];
+                NSMutableArray* keysAndValues = [NSMutableArray array];
                 
-                if([set isKindOfClass:[PDFDictionary class]])
+                PDFObjectParser* parser = [PDFObjectParser parserWithString:[self pdfFileRepresentation] Document:self.parentDocument];
+                
+                for(id pdfObject in parser)[keysAndValues addObject:pdfObject];
+                
+                if([keysAndValues count]&1)return nil;
+                
+                for(NSUInteger c = 0 ; c < [keysAndValues count]/2; c++)
                 {
-                    [set setParent:self];
+                    NSString* key = keysAndValues[2*c];
+                    [keys addObject:key];
+                    nsdFiller[key] = keysAndValues[2*c+1];
                 }
-                
-                
-                [temp setObject:set forKey:key];
             }
+
+            NSMutableDictionary* temp = [NSMutableDictionary dictionary];
             
-            [poolPDFObject drain];
-           
-        }
+            for(NSString* key in keys)
+            {
+                @autoreleasepool {
+                    id set = (_dict!=NULL?[self pdfObjectFromKey:key]:nsdFiller[key]);
+
+                    if(set != nil) 
+                    {
+                        
+                        if([set isKindOfClass:[PDFDictionary class]])
+                        {
+                            [set setParent:self];
+                        }
+                        
+                        
+                        temp[key] = set;
+                    }
+                
+                }
+               
+            }
     
-        _nsd = [[NSDictionary  dictionaryWithDictionary:temp] retain];
+            _nsd = [NSDictionary  dictionaryWithDictionary:temp];
         
-        [pool drain];
+        }
     }
     return _nsd;
 }
@@ -207,7 +202,7 @@ void checkKeys(const char *key,CGPDFObjectRef value,void *info)
     CGPDFDictionaryRef dr = NULL;
     if(CGPDFDictionaryGetDictionary(_dict, [key UTF8String], &dr))
     {
-        return [[[PDFDictionary alloc] initWithDictionary:dr] autorelease];
+        return [[PDFDictionary alloc] initWithDictionary:dr];
     }
     return nil;
 }
@@ -217,7 +212,7 @@ void checkKeys(const char *key,CGPDFObjectRef value,void *info)
     CGPDFArrayRef ar = NULL;
     if(CGPDFDictionaryGetArray(_dict, [key UTF8String], &ar))
     {
-        return [[[PDFArray alloc] initWithArray:ar] autorelease];
+        return [[PDFArray alloc] initWithArray:ar];
     }
     
     return nil;
@@ -229,7 +224,7 @@ void checkKeys(const char *key,CGPDFObjectRef value,void *info)
     CGPDFStringRef str = NULL;
     if(CGPDFDictionaryGetString(_dict, [key UTF8String], &str))
     {
-        return [(NSString*)CGPDFStringCopyTextString(str) autorelease];
+        return (NSString*)CFBridgingRelease(CGPDFStringCopyTextString(str));
     }
        
     return nil;
@@ -241,7 +236,7 @@ void checkKeys(const char *key,CGPDFObjectRef value,void *info)
     const char* targ = NULL;
     if(CGPDFDictionaryGetName(_dict, [key UTF8String], &targ))
     {
-        return [NSString stringWithUTF8String:targ];
+        return @(targ);
     }
     
     return nil;
@@ -252,7 +247,7 @@ void checkKeys(const char *key,CGPDFObjectRef value,void *info)
     CGPDFInteger targ;
     if(CGPDFDictionaryGetInteger(_dict, [key UTF8String], &targ))
     {
-        return [NSNumber numberWithUnsignedInteger:(NSUInteger)targ];
+        return @((NSUInteger)targ);
     }
     
     return nil;
@@ -262,7 +257,7 @@ void checkKeys(const char *key,CGPDFObjectRef value,void *info)
     CGPDFReal targ;
     if(CGPDFDictionaryGetNumber(_dict, [key UTF8String], &targ))
     {
-        return [NSNumber numberWithFloat:(float)targ];
+        return @((float)targ);
     }
     
     return nil;
@@ -274,7 +269,7 @@ void checkKeys(const char *key,CGPDFObjectRef value,void *info)
     CGPDFBoolean targ;
     if(CGPDFDictionaryGetBoolean(_dict, [key UTF8String], &targ))
     {
-        return [NSNumber numberWithBool:(BOOL)targ];
+        return @((BOOL)targ);
     }
     
     return nil;
@@ -287,7 +282,7 @@ void checkKeys(const char *key,CGPDFObjectRef value,void *info)
     CGPDFStreamRef targ = NULL;
     if(CGPDFDictionaryGetStream(_dict, [key UTF8String], &targ))
     {
-        return [[[PDFStream alloc] initWithStream:targ] autorelease];
+        return [[PDFStream alloc] initWithStream:targ];
     }
     
     return nil;
@@ -295,7 +290,7 @@ void checkKeys(const char *key,CGPDFObjectRef value,void *info)
 
 #pragma mark - NSFastEnumeration
 
--(NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id [])buffer count:(NSUInteger)len
+-(NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id __unsafe_unretained[])buffer count:(NSUInteger)len
 {
     return [self.nsd countByEnumeratingWithState:state objects:buffer count:len];
 }
@@ -312,7 +307,7 @@ void checkKeys(const char *key,CGPDFObjectRef value,void *info)
     NSMutableString* ret = [NSMutableString stringWithString:@"<<\n"];
     for(int i = 0  ; i < [self count];i++)
     {
-        NSString* key = [keys objectAtIndex:i];
+        NSString* key = keys[i];
         id obj = [self objectForKey:key];
         NSString* objRepresentation = [PDFUtility pdfObjectRepresentationFrom:obj Type:[self typeForKey:key]];
         [ret appendString:[NSString stringWithFormat:@"/%@ %@\n",[PDFUtility pdfEncodedString:key],objRepresentation]];

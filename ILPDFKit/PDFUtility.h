@@ -17,7 +17,7 @@
  @param path Points to the file to attach to the context.
  @return A new PDF context, or NULL if a context could not be created. You are responsible for releasing this object using CGContextRelease.
  */
-+(CGContextRef)outputPDFContextCreate:(const CGRect *)inMediaBox Path:(CFStringRef)path;
++(CGContextRef)newOutputPDFContext:(const CGRect *)inMediaBox path:(CFStringRef)path;
 
 /**---------------------------------------------------------------------------------------
  * @name Creating a PDF Document
@@ -29,19 +29,19 @@
  @return A new Quartz PDF document, or NULL if a document could not be created. You are responsible for releasing the object using CGPDFDocumentRelease.
  */
 
-+(CGPDFDocumentRef)createPDFDocumentRefFromData:(NSData*)data;
++(CGPDFDocumentRef)newPDFDocumentRefFromData:(NSData*)data;
 
 /** Creates a PDF Document.
  @param name The resource defining the PDF file to create the document from.
  @return A new Quartz PDF document, or NULL if a document could not be created. You are responsible for releasing the object using CGPDFDocumentRelease.
  */
-+(CGPDFDocumentRef)createPDFDocumentRefFromResource:(NSString*)name;
++(CGPDFDocumentRef)newPDFDocumentRefFromResource:(NSString*)name;
 
 /** Creates a PDF Document.
  @param pathToPdfDoc The file path defining the PDF file to create the document from.
  @return A new Quartz PDF document, or NULL if a document could not be created. You are responsible for releasing the object using CGPDFDocumentRelease.
  */
-+(CGPDFDocumentRef)createPDFDocumentRefFromPath:(NSString*)pathToPdfDoc;
++(CGPDFDocumentRef)newPDFDocumentRefFromPath:(NSString*)pathToPdfDoc;
 
 
 /** Creates a PDF compatible string hash escaped to remove PDF delimeter characters .

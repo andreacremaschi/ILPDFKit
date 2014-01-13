@@ -15,17 +15,17 @@
 
 /** The action AcroScript.
  */
-@property(nonatomic,retain) NSString* string;
+@property(nonatomic,strong) NSString* string;
 
 
 /** The parent PDFForm
  */
-@property(nonatomic,assign) PDFForm* parent;
+@property(nonatomic,weak) PDFForm* parent;
 
 
 /** A javascript string to add to the execution environment before string is executed.
  */
-@property(nonatomic,retain) NSString* prefix;
+@property(nonatomic,strong) NSString* prefix;
 
 /** Defines the context of user interaction in which the action is to be triggered.
  @discussion
@@ -36,7 +36,7 @@
  - E: Performed when a text field starts editing or a choice field is expanded.
  
  */
-@property(nonatomic,retain) NSString* key;
+@property(nonatomic,strong) NSString* key;
 
 /**---------------------------------------------------------------------------------------
  * @name Creating a PDFFormAction

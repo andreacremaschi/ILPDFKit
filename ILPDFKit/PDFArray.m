@@ -25,11 +25,6 @@
 }
 
 
--(void)dealloc
-{
-    [_nsa release];
-    [super dealloc];
-}
 
 -(id)initWithArray:(CGPDFArrayRef)parr
 {
@@ -58,16 +53,16 @@
 {
     if([self.nsa count] < 4)return CGRectZero;
     CGFloat x0,y0,x1,y1;
-    x0 = [[self.nsa objectAtIndex:0] floatValue];
-    y0 = [[self.nsa objectAtIndex:1] floatValue];
-    x1 = [[self.nsa objectAtIndex:2] floatValue];
-    y1 = [[self.nsa objectAtIndex:3] floatValue];
+    x0 = [(self.nsa)[0] floatValue];
+    y0 = [(self.nsa)[1] floatValue];
+    x1 = [(self.nsa)[2] floatValue];
+    y1 = [(self.nsa)[3] floatValue];
     return CGRectMake(MIN(x0,x1),MIN(y0,y1),fabsf(x1-x0),fabsf(y1-y0));
 }
 
 -(id)objectAtIndex:(NSUInteger)aIndex
 {
-    if(aIndex < [self.nsa count])return [self.nsa objectAtIndex:aIndex];
+    if(aIndex < [self.nsa count])return (self.nsa)[aIndex];
     return nil;
 }
 
@@ -78,7 +73,7 @@
 
 -(id)firstObject
 {
-    if([self count]>0)return [self.nsa objectAtIndex:0];
+    if([self count]>0)return (self.nsa)[0];
     return nil;
 }
 
@@ -103,41 +98,41 @@
 {
     if(_nsa == nil)
     {
-        NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-        NSMutableArray* temp = [NSMutableArray array];
-        
-        NSUInteger count = 0;
-        NSMutableArray* nsaFiller = nil;
-        
-        if(_arr == NULL)
-        {
-            nsaFiller = [NSMutableArray array];
-           
-            PDFObjectParser* parser = [PDFObjectParser parserWithString:[self pdfFileRepresentation] Document:self.parentDocument];
+        @autoreleasepool {
+            NSMutableArray* temp = [NSMutableArray array];
             
-             for(id pdfObject in parser)[nsaFiller addObject:pdfObject];
-
-            count = [nsaFiller count];
-
-        }
-        else count = CGPDFArrayGetCount(_arr);
-        
-        
-   
-        
-        for(NSUInteger c = 0 ; c < count; c++)
-        {
-            NSAutoreleasePool* poolPDFObject = [[NSAutoreleasePool alloc] init];
-            id add = (_arr!=NULL?[self pdfObjectAtIndex:c]:[nsaFiller objectAtIndex:c]);
-            if(add != nil) 
+            NSUInteger count = 0;
+            NSMutableArray* nsaFiller = nil;
+            
+            if(_arr == NULL)
             {
-                [temp addObject:add];
+                nsaFiller = [NSMutableArray array];
+               
+                PDFObjectParser* parser = [PDFObjectParser parserWithString:[self pdfFileRepresentation] Document:self.parentDocument];
+                
+                 for(id pdfObject in parser)[nsaFiller addObject:pdfObject];
+
+                count = [nsaFiller count];
+
             }
-            [poolPDFObject drain];
+            else count = CGPDFArrayGetCount(_arr);
+            
+            
+   
+            
+            for(NSUInteger c = 0 ; c < count; c++)
+            {
+                @autoreleasepool {
+                    id add = (_arr!=NULL?[self pdfObjectAtIndex:c]:nsaFiller[c]);
+                    if(add != nil) 
+                    {
+                        [temp addObject:add];
+                    }
+                }
+            }
+            
+            _nsa = [NSArray arrayWithArray:temp];
         }
-        
-        _nsa = [[NSArray arrayWithArray:temp] retain];
-        [pool drain];
     }
         
     return _nsa;
@@ -181,7 +176,7 @@
     CGPDFDictionaryRef dr = NULL;
     if(CGPDFArrayGetDictionary(_arr, index, &dr))
     {
-        return [[[PDFDictionary alloc] initWithDictionary:dr] autorelease];
+        return [[PDFDictionary alloc] initWithDictionary:dr];
     }
     return nil;
 }
@@ -191,7 +186,7 @@
     CGPDFArrayRef ar = NULL;
     if(CGPDFArrayGetArray(_arr, index, &ar))
     {
-        return [[[PDFArray alloc] initWithArray:ar] autorelease];
+        return [[PDFArray alloc] initWithArray:ar];
     }
     return nil;
 }
@@ -202,7 +197,7 @@
     CGPDFStringRef str = NULL;
     if(CGPDFArrayGetString(_arr, index, &str))
     {
-       return [(NSString*)CGPDFStringCopyTextString(str) autorelease];
+       return (NSString*)CFBridgingRelease(CGPDFStringCopyTextString(str));
        
     }
     return nil;
@@ -214,7 +209,7 @@
     const char* targ = NULL;
     if(CGPDFArrayGetName(_arr, index, &targ))
     {
-        return [NSString stringWithUTF8String:targ];
+        return @(targ);
     }
     
     return nil;
@@ -225,7 +220,7 @@
     CGPDFInteger targ;
     if(CGPDFArrayGetInteger(_arr, index, &targ))
     {
-        return [NSNumber numberWithUnsignedInteger:(NSUInteger)targ];
+        return @((NSUInteger)targ);
     }
     return nil;
 }
@@ -236,7 +231,7 @@
     CGPDFReal targ;
     if(CGPDFArrayGetNumber(_arr, index, &targ))
     {
-        return [NSNumber numberWithFloat:(float)targ];
+        return @((float)targ);
     }
     return nil;
 }
@@ -247,7 +242,7 @@
     CGPDFBoolean targ;
     if(CGPDFArrayGetBoolean(_arr, index, &targ))
     {
-        return [NSNumber numberWithBool:(BOOL)targ];
+        return @((BOOL)targ);
     }
     return nil;
 }
@@ -258,7 +253,7 @@
     CGPDFStreamRef targ = NULL;
     if(CGPDFArrayGetStream(_arr, index, &targ))
     {
-        return [[[PDFStream alloc] initWithStream:targ] autorelease];
+        return [[PDFStream alloc] initWithStream:targ];
     }
     return nil;
 }
@@ -267,7 +262,7 @@
 #pragma mark - NSFastEnumeration
 
 
--(NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id [])buffer count:(NSUInteger)len
+-(NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id __unsafe_unretained [])buffer count:(NSUInteger)len
 {
     return [self.nsa countByEnumeratingWithState:state objects:buffer count:len];
 }

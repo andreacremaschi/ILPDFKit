@@ -19,13 +19,8 @@
 
 -(void)dealloc
 {
-    [_val release];
-    self.name = nil;
-    self.exportValue = nil;
     [_button removeFromSuperview];
-    [_button release];
     
-    [super dealloc];
 }
 
 -(id)initWithFrame:(CGRect)frame Radio:(BOOL)rad
@@ -37,7 +32,7 @@
         self.opaque = NO;
         self.backgroundColor = [UIColor clearColor];
         _defFontSize = MIN(16, self.frame.size.height*0.75);
-        _button = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+        _button = [UIButton buttonWithType:UIButtonTypeCustom];
         
         
         CGFloat minDim = MIN(frame.size.width,frame.size.height)*0.85;
@@ -157,7 +152,7 @@
     }
     if(_val!=value)
     {
-        [_val release];_val = [value retain];
+        _val = value;
     }
     if(_val)
     {

@@ -29,7 +29,6 @@
             {
                 NSString* temp = [[NSString alloc] initWithData:[js data] encoding:NSASCIIStringEncoding];
                 self.string = temp;
-                [temp release];
             }
         }
     }
@@ -45,12 +44,5 @@
     [self.parent.parent executeJS:exec];
 }
 
--(void)dealloc
-{
-    self.string = nil;
-    self.prefix = nil;
-    self.key = nil;
-    [super dealloc];
-}
 
 @end

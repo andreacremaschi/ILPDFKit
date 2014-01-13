@@ -18,11 +18,6 @@
 }
 
 
--(void)dealloc
-{
-    [_textFieldOrTextView release];
-    [super dealloc];
-}
 
 -(id)initWithFrame:(CGRect)frame Multiline:(BOOL)multiline Alignment:(UITextAlignment)alignment SecureEntry:(BOOL)secureEntry ReadOnly:(BOOL)ro
 {
@@ -112,7 +107,8 @@
    if(_multi == NO)
    {
        UITextField* textField = (UITextField*)_textFieldOrTextView;
-       CGFloat factor = [value sizeWithAttributes:@{NSFontAttributeName:textField.font}].width/(textField.bounds.size.width);
+       CGSize fontSize = [value sizeWithAttributes: @{NSFontAttributeName: textField.font}];
+       CGFloat factor = fontSize.width / CGRectGetWidth( textField.bounds);
      
        {
            if(_multi == NO)
@@ -167,7 +163,6 @@
     paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
     paragraphStyle.alignment = align;
     [text drawInRect:CGRectMake(0, 0, rect.size.width, rect.size.height) withAttributes:@{NSFontAttributeName:font,NSParagraphStyleAttributeName: paragraphStyle}];
-    [paragraphStyle release];
     UIGraphicsPopContext();
 }
 
@@ -206,7 +201,6 @@
                                       attributes:@{NSFontAttributeName:textView.font,NSParagraphStyleAttributeName:paragraphStyle}
                                         context:nil];
     
-    [paragraphStyle release];
     
     float usedLines = ceilf(textRect.size.height/textView.font.lineHeight);
     

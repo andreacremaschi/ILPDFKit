@@ -33,16 +33,6 @@
 }
 
 
-
--(void)dealloc
-{
-    for(NSUInteger i = 0 ; i < PDFFormTypeNumberOfFormTypes ; i++)[_formsByType[i] release];
-    [_allForms release];
-    [_nameTree release];
-    [_jsParser release];
-    [super dealloc];
-}
-
 -(id)initWithParentDocument:(PDFDocument*)parent
 {
     self = [super init];
@@ -55,9 +45,10 @@
         NSMutableDictionary* pmap = [NSMutableDictionary dictionary];
         for(PDFPage* page in _document.pages)
         {
-            [pmap setObject:[NSNumber numberWithUnsignedInteger:page.pageNumber] forKey:[NSNumber numberWithUnsignedInteger:(NSUInteger)(page.dictionary.dict)]];
+            pmap[@((NSUInteger)(page.dictionary.dict))] = @(page.pageNumber);
         }
-        for(PDFDictionary* field in [[_document.catalog objectForKey:@"AcroForm"] objectForKey:@"Fields"])
+        PDFDictionary*catalog = _document.catalog;
+        for(PDFDictionary* field in [[catalog objectForKey:@"AcroForm"] objectForKey: @"Fields"])
         {
             [self enumerateFields:field PageMap:pmap];
         }
@@ -74,7 +65,7 @@
     
     for(NSString* comp in comps)
     {
-        current = [current objectForKey:comp];
+        current = current[comp];
         if(current == nil)return nil;
         
         if([current isKindOfClass:[NSMutableArray class]])
@@ -118,7 +109,7 @@
     
     for(NSString* comp in comps)
     {
-        current = [current objectForKey:comp];
+        current = current[comp];
     }
     
     [current removeObject:form];
@@ -155,10 +146,9 @@
     NSUInteger targ = (NSUInteger)(((PDFDictionary*)[leaf objectForKey:@"P"]).dict);
     leaf.parent = parent;
     
-    NSUInteger index = targ?([[pmap objectForKey:[NSNumber numberWithUnsignedInteger:targ]] unsignedIntegerValue] - 1):0;
-    PDFForm* form = [[PDFForm alloc] initWithFieldDictionary:leaf Page:[_document.pages objectAtIndex:index] Parent:self];
+    NSUInteger index = targ?([pmap[@(targ)] unsignedIntegerValue] - 1):0;
+    PDFForm* form = [[PDFForm alloc] initWithFieldDictionary:leaf Page:(_document.pages)[index] Parent:self];
     [self addForm:form];
-    [form release];
 }
 
 -(NSArray*)formsDescendingFromTreeNode:(NSDictionary*)node
@@ -166,7 +156,7 @@
     NSMutableArray* ret = [NSMutableArray array];
     for(NSString* key in [node allKeys])
     {
-        id obj = [node objectForKey:key];
+        id obj = node[key];
         
         if([obj isKindOfClass:[NSMutableArray class]])
         {
@@ -183,15 +173,15 @@
 
 -(void)populateNameTreeNode:(NSMutableDictionary*)node WithComponents:(NSArray*)components Final:(PDFForm*)final
 {
-    NSString* base = [components objectAtIndex:0];
+    NSString* base = components[0];
     
     if([components count] == 1)
     {
-        NSMutableArray* arr = [node objectForKey:base];
+        NSMutableArray* arr = node[base];
         if(arr == nil)
         {
             arr = [NSMutableArray arrayWithObject:final];
-            [node setObject:arr forKey:base];
+            node[base] = arr;
         }
         else
         {
@@ -200,11 +190,11 @@
         return;
     }
     
-    NSMutableDictionary* dict  = [node objectForKey:base];
+    NSMutableDictionary* dict  = node[base];
     if(dict == nil)
     {
         dict = [NSMutableDictionary dictionary];
-        [node setObject:dict forKey:base];
+        node[base] = dict;
     }
    
     [self populateNameTreeNode:dict WithComponents:[components subarrayWithRange:NSMakeRange(1, [components count]-1)] Final:final];
@@ -296,7 +286,7 @@
     
     for(PDFForm* form in [self formsWithType:PDFFormTypeChoice])
     {
-        [[form.actions objectForKey:@"E"] execute];
+        [(form.actions)[@"E"] execute];
     }
 }
 
@@ -347,7 +337,7 @@
     NSMutableString* ret = [NSMutableString string];
     for(NSString* key in [node allKeys])
     {
-        id obj = [node objectForKey:key];
+        id obj = node[key];
         if([obj isKindOfClass:[NSMutableArray class]])
         {
             PDFForm* form = (PDFForm*)[obj lastObject];
@@ -366,7 +356,7 @@
 #pragma mark - NSFastEnumeration
 
 
--(NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id [])buffer count:(NSUInteger)len
+-(NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id __unsafe_unretained[])buffer count:(NSUInteger)len
 {
     return [[self allForms] countByEnumeratingWithState:state objects:buffer count:len];
 }
@@ -380,7 +370,6 @@
         if(form.formType == PDFFormTypeChoice)continue;
         id add = [form createUIAdditionViewForSuperviewWithWidth:width XMargin:margin YMargin:hmargin];
           if(add) [ret addObject:add];
-        [add release];
     }
     NSMutableArray* temp = [[NSMutableArray alloc] init];
     
@@ -390,7 +379,6 @@
     {
         id add = [form createUIAdditionViewForSuperviewWithWidth:width XMargin:margin YMargin:hmargin];
         if(add) [temp addObject:add];
-        [add release];
     }
     
     [temp sortUsingComparator:^NSComparisonResult(PDFFormChoiceField* obj1, PDFFormChoiceField* obj2) {
@@ -400,7 +388,6 @@
     }
      ];
     [ret addObjectsFromArray:temp];
-    [temp release];
     return ret;
 }
 

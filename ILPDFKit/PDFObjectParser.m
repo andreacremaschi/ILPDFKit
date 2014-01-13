@@ -32,15 +32,10 @@ PDFObjectParserState;
     PDFDocument* _parentDocument;
 }
 
--(void)dealloc
-{
-    [_str release];
-    [super dealloc];
-}
 
 +(PDFObjectParser*)parserWithString:(NSString *)strg Document:(PDFDocument*)parentDocument
 {
-    return [[[PDFObjectParser alloc] initWithString:strg Document:parentDocument] autorelease];
+    return [[PDFObjectParser alloc] initWithString:strg Document:parentDocument];
     
 }
 
@@ -64,10 +59,8 @@ PDFObjectParserState;
             //Here we replace indirect object references with a representation that is more easily parsed on the next step.
             NSRegularExpression* regex = [[NSRegularExpression alloc] initWithPattern:@"(\\d+)\\s+(\\d+)\\s+[R]\\W" options:0 error:NULL];
             _str = [regex stringByReplacingMatchesInString:_str options:0 range:NSMakeRange(0, _str.length) withTemplate:@"($1,$2,ioref)"];
-            [regex release];
         }
         
-        [_str retain];
     }
     return self;
 }
@@ -143,7 +136,7 @@ PDFObjectParserState;
     if([work rangeOfString:@"ioref"].location!= NSNotFound)
     {
         NSArray* tokens = [[work substringWithRange:NSMakeRange(1, work.length-1)] componentsSeparatedByString:@","];
-        PDFObject* ret = [[[PDFObject alloc] initWithObjectNumber:[[tokens objectAtIndex:0] integerValue] GenerationNumber:[[tokens objectAtIndex:1] integerValue] Document:_parentDocument] autorelease];
+        PDFObject* ret = [[PDFObject alloc] initWithObjectNumber:[tokens[0] integerValue] GenerationNumber:[tokens[1] integerValue] Document:_parentDocument];
       
       
         return ret;
@@ -163,17 +156,16 @@ PDFObjectParserState;
         NSNumberFormatter * f = [[NSNumberFormatter alloc] init];
         [f setNumberStyle:NSNumberFormatterDecimalStyle];
         NSNumber * rn = [f numberFromString:work];
-        [f release];
         return rn;
     }
     
     //Boolean
     
-    if([work isEqualToString:@"true"])return [NSNumber numberWithBool:YES];
-    if([work isEqualToString:@"false"])return [NSNumber numberWithBool:NO];
+    if([work isEqualToString:@"true"])return @YES;
+    if([work isEqualToString:@"false"])return @NO;
     if([work isEqualToString:@"null"])return nil;
     
-    return [[PDFObject createWithPDFRepresentation:work Document:_parentDocument] autorelease];
+    return [PDFObject createWithPDFRepresentation:work Document:_parentDocument];
     
     
 }
@@ -182,7 +174,7 @@ PDFObjectParserState;
 
 
     
-- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id *)stackbuf count:(NSUInteger)len
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id __unsafe_unretained [])stackbuf count:(NSUInteger)len;
 {
     PDFObjectParserState parserState;
     
@@ -217,8 +209,8 @@ PDFObjectParserState;
     ((state->extra)[0]) = (unsigned long)parserState.nestCount;
     ((state->extra)[1]) = (unsigned long)parserState.startOfScanIndex;
     
-    state->itemsPtr = stackbuf;
-    state->mutationsPtr = (unsigned long *)self;
+//    state->itemsPtr = (__unsafe_unretained)stackbuf;
+//    state->mutationsPtr = (__bridge unsigned long *)self;
     
     return batchCount;
 }

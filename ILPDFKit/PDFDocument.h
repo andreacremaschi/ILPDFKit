@@ -14,11 +14,11 @@
 
 /** The PDF file data.
  */
-@property(nonatomic,retain) NSMutableData* documentData;
+@property(nonatomic,strong) NSMutableData* documentData;
 
 /** The form container holding the forms for the document.
  */
-@property(nonatomic,readonly) PDFFormContainer* forms;
+@property(weak, nonatomic,readonly) PDFFormContainer* forms;
 
 
 /** The path for the PDF document if it was loaded from file.
@@ -30,20 +30,20 @@
 /** The document catalog for the PDF.
  @discussion See 3.6.1 in 'PDF Reference Second Edition version 1.3, Adobe Systems Incorporated'.
  */
-@property(nonatomic,readonly) PDFDictionary* catalog;
+@property(weak, nonatomic,readonly) PDFDictionary* catalog;
 
 /** The document info dictionary
  */
-@property(nonatomic,readonly) PDFDictionary* info;
+@property(weak, nonatomic,readonly) PDFDictionary* info;
 
 /** An array containing PDFPage objects cooresponding in order and content to the pages of the document.
  */
-@property(nonatomic,readonly) NSArray* pages;
+@property(weak, nonatomic,readonly) NSArray* pages;
 
 
 /** The name of the PDF.
  */
-@property(nonatomic,retain) NSString* pdfName;
+@property(nonatomic,strong) NSString* pdfName;
 
 /** The CGPDFDocument on top of which the class is built.
  */

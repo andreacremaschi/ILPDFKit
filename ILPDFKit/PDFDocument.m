@@ -19,7 +19,7 @@
     -(PDFDictionary*)getTrailerBeforeOffset:(NSUInteger)offset;
     -(NSUInteger)offsetForObjectWithNumber:(NSUInteger)number InSection:(NSUInteger)section;
     -(NSString*)codeForIndirectObjectWithOffset:(NSUInteger)offset;
-    @property(nonatomic,readonly) NSArray* crossReferenceSectionsOffsets;
+    @property(weak, nonatomic,readonly) NSArray* crossReferenceSectionsOffsets;
 
 @end
 
@@ -39,18 +39,7 @@
 
 -(void)dealloc
 {
-   
-    self.documentData = nil;
-    self.pdfName = nil;
-    [_documentPath release];
-    [_catalog release];
-    [_info release];
-    [_pages release];
-    [_forms release];
-    [_sourceCode release];
-    [_crossReferenceSectionsOffsets release];
     CGPDFDocumentRelease(_document);
-    [super dealloc];
 }
 
 -(id)initWithData:(NSData *)data
@@ -58,7 +47,7 @@
     self = [super init];
     if(self != nil)
     {
-        _document = [PDFUtility createPDFDocumentRefFromData:data];
+        _document = [PDFUtility newPDFDocumentRefFromData:data];
         _documentData = [[NSMutableData alloc] initWithData:data];
     }
     return self;
@@ -71,8 +60,8 @@
     {
         if([[[name componentsSeparatedByString:@"."] lastObject] isEqualToString:@"pdf"])
             name = [name substringToIndex:name.length-4];
-        _document = [PDFUtility createPDFDocumentRefFromResource:name];
-        _documentPath = [[[NSBundle mainBundle] pathForResource:name ofType:@"pdf"] retain];
+        _document = [PDFUtility newPDFDocumentRefFromResource:name];
+        _documentPath = [[NSBundle mainBundle] pathForResource:name ofType:@"pdf"];
         
         
         
@@ -91,8 +80,8 @@
     self = [super init];
     if(self != nil)
     {
-        _document = [PDFUtility createPDFDocumentRefFromPath:path];
-        _documentPath = [path retain];
+        _document = [PDFUtility newPDFDocumentRefFromPath:path];
+        _documentPath = path;
         
         
         
@@ -135,7 +124,7 @@
 
 -(void)writeToFile:(NSString*)name
 {
-    NSString *docsDirectory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES) objectAtIndex:0];
+    NSString *docsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES)[0];
     NSString *path = [docsDirectory stringByAppendingPathComponent:name];
     [self.documentData writeToFile:path atomically:YES];
 }
@@ -143,12 +132,12 @@
 
 -(void)refresh
 {
-    [_catalog release];_catalog = nil;
-    [_pages release];_pages = nil;
-    [_info release];_info = nil;
-    [_sourceCode release];_sourceCode = nil;
+    _catalog = nil;
+    _pages = nil;
+    _info = nil;
+    _sourceCode = nil;
     CGPDFDocumentRelease(_document);_document = NULL;
-    _document = [PDFUtility createPDFDocumentRefFromData:self.documentData];
+    _document = [PDFUtility newPDFDocumentRefFromData:self.documentData];
 }
 
 
@@ -216,11 +205,9 @@
         {
             PDFPage* add = [[PDFPage alloc] initWithPage:CGPDFDocumentGetPage(_document,i+1)];
             [temp addObject:add];
-            [add release];
         }
         
         _pages = [[NSArray alloc] initWithArray:temp];
-        [temp release];
     }
     
     return _pages;
@@ -250,7 +237,7 @@
             NSScanner* scanner = [NSScanner scannerWithString:[code substringFromIndex:startxrefOffsetEnd+markerLength]];
             NSInteger crossReferenceTableOffset;
             [scanner scanInteger:&crossReferenceTableOffset];
-            [temp addObject:[NSNumber numberWithInteger:crossReferenceTableOffset]];
+            [temp addObject:@(crossReferenceTableOffset)];
             bound = startxrefOffsetEnd;
         }
     }
@@ -406,7 +393,7 @@
 
 -(NSUInteger)offsetForObjectWithNumber:(NSUInteger)number InSection:(NSUInteger)section
 {
-    NSUInteger sectionOffset = [[self.crossReferenceSectionsOffsets objectAtIndex:section] unsignedIntegerValue]+[@"xref" length];
+    NSUInteger sectionOffset = [(self.crossReferenceSectionsOffsets)[section] unsignedIntegerValue]+[@"xref" length];
     
     NSString* searchStart = [self.sourceCode substringFromIndex:sectionOffset];
     
@@ -443,7 +430,7 @@
     {
         NSArray* lines = [linesStart componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"nf"]];
         
-        NSString* targ = [lines objectAtIndex:number-startingObjectNumber];
+        NSString* targ = lines[number-startingObjectNumber];
         
         
         NSScanner* scanner = [NSScanner scannerWithString:targ];
@@ -501,7 +488,7 @@
         trailerStartMarker++;
     }
     
-    return [[[PDFDictionary alloc] initWithPDFRepresentation:[code substringWithRange:NSMakeRange(trailerStartMarker, trailerEndMarker-trailerStartMarker)] Document:self] autorelease];
+    return [[PDFDictionary alloc] initWithPDFRepresentation:[code substringWithRange:NSMakeRange(trailerStartMarker, trailerEndMarker-trailerStartMarker)] Document:self];
     
 }
 

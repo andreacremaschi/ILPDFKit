@@ -17,7 +17,7 @@
 
 /** The view in pdfUIAdditionElementViews has holds the input focus.
  */
-@property(nonatomic,assign) PDFUIAdditionElementView* activeUIAdditionsView;
+@property(nonatomic,weak) PDFUIAdditionElementView* activeUIAdditionsView;
 
 
 /** The webview used to render the PDF.

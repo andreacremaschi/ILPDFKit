@@ -58,11 +58,11 @@
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
     if ([keyPath isEqualToString:@"value"]) {
-        self.value = [change objectForKey:NSKeyValueChangeNewKey];
+        self.value = change[NSKeyValueChangeNewKey];
     }
     else if([keyPath isEqualToString:@"options"])
     {
-        self.options = [change objectForKey:NSKeyValueChangeNewKey];
+        self.options = change[NSKeyValueChangeNewKey];
     }
 }
 
